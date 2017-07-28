@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<t t-name="__export__.ir_ui_view_735">
+    <t t-call="report.html_container">
+        <t t-call="report.internal_layout">
+        <div class="page">
+        <div align="center" class="row">
+            <h1>Financial Report</h1>
+            Totals for period: <t t-esc="min([o.date_order for o in docs])"/> - <t t-esc="max([o.date_order for o in docs])"/>
+        </div>
+        <div class="row">
+        <div class="col-xs-6">
+            <h1>Sales Totals</h1>
+            <h3>Sales Summary</h3>
+            <t t-set="total" t-value="sum([o.amount_total for o in docs])" />
+            <t t-set="total_tax" t-value="sum([o.amount_tax for o in docs])" />
+            <t t-set="total_disc" t-value="0" />
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.lines" t-as="line">
+                    <t t-set="total_disc" t-value="total_disc + ((line.price_unit*line.qty)*(line.discount/100))"/>
+                </t>
+            </t>
+            <div>Net Sales: $<t t-esc="(total-total_tax)+total_disc" /></div>
+            <div>Discounts: $<t t-esc="total_disc" /></div>
+            <div>Subtotal: $<t t-esc="total-total_tax" /></div>
+            <div>Net Tax: $<t t-esc="total_tax" /></div>
+            <br/>
+            <div><strong>Grand Total: $<t t-esc="total" /></strong></div>
+
+            <!-- TAX TYPES -->
+            <t t-set="tax_amounts" t-value="{}"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.lines" t-as="line">
+                   <t t-if="line.tax_ids">
+                        <t t-set="this_tax_amount" t-value="tax_amounts.get(line.tax_ids[0].display_name, 0)"/>
+                        <t t-esc="tax_amounts.update({line.tax_ids[0].display_name: this_tax_amount + line.price_subtotal_incl})"/>
+                   </t>
+                </t>
+            </t>
+            <h3>Sales by Tax</h3>
+            <t t-foreach="tax_amounts.items()" t-as="tax">
+                  <div><t t-esc="tax[0]"/>: <t t-esc="tax[1]"/></div>
+            </t>
+            <t t-set="undefined_tax" t-value="sum([tax[1] for tax in tax_amounts.items()])" />
+            <t t-if="undefined_tax != total">
+                <div>Undefined: <t t-esc="total - undefined_tax"/></div>
+            </t>
+
+            <!-- PAYMENT METHOD DETAIL -->
+            <t t-set="pm_amounts" t-value="{}"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.statement_ids" t-as="xline">
+                   <t t-if="xline.journal_id">
+                        <t t-set="this_pm_amount" t-value="pm_amounts.get(xline.journal_id.name, 0)"/>
+                        <t t-esc="pm_amounts.update({xline.journal_id.name: this_pm_amount + xline.amount})"/>
+                   </t>
+                </t>
+            </t>
+            <h3>Sales by Payment</h3>
+            <t t-foreach="pm_amounts.items()" t-as="pm">
+                  <div><t t-esc="pm[0]"/>: <t t-esc="pm[1]"/></div>
+            </t>
+            <!-- CREDIT CARD DETAIL -->
+            <t t-set="undefined_cc" t-value="0"/>
+            <t t-set="cc_amounts" t-value="{}"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.statement_ids" t-as="sline">
+                   <t t-if="sline.mercury_ref_no">
+                        <t t-set="this_cc_amount" t-value="cc_amounts.get(sline.mercury_card_brand, 0)"/>
+                        <t t-esc="cc_amounts.update({sline.mercury_card_brand: this_cc_amount + sline.amount})"/>
+                   </t>
+                   <t t-if="sline.journal_id.id == 9">
+                        <t t-set="undefined_cc" t-value="undefined_cc + sline.amount"/>
+                   </t>
+                </t>
+            </t>
+            <h4>Credit Card Detail</h4>
+            <t t-foreach="cc_amounts.items()" t-as="cc">
+                  <div><t t-esc="cc[0]"/>: <t t-esc="cc[1]"/></div>
+            </t>
+            <t t-set="captured_cc" t-value="sum([cc[1] for cc in cc_amounts.items()])" />
+            <t t-if="undefined_cc != 0">
+                <div>Undefined: <t t-esc="undefined_cc - captured_cc"/></div>
+            </t>
+        </div>
+        <div class="col-xs-6">
+            <h1>Sales Breakdown</h1>
+            <t t-set="categ_amounts" t-value="{}"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-foreach="o.lines" t-as="line">
+                        <t t-set="this_categ_amount" t-value="categ_amounts.get(line.product_id.product_tmpl_id.pos_categ_id.name, 0)"/>
+                        <t t-esc="categ_amounts.update({line.product_id.product_tmpl_id.pos_categ_id.name: this_categ_amount + line.price_subtotal_incl})"/>
+                </t>
+            </t>
+            <t t-foreach="categ_amounts.items()" t-as="categ">
+                  <h4><div><strong><t t-if="categ[0] == False">Undefined</t><t t-esc="categ[0]"/>: $<t t-esc="categ[1]"/></strong></div></h4>
+                  <h5><div>Category % of Total Sales: <t t-esc="round((categ[1]/total)*100,2)"/>%</div></h5>
+                  <t t-set="prod_amounts" t-value="{}"/>
+                  <t t-foreach="docs" t-as="o">
+                      <t t-foreach="o.lines" t-as="line">
+                          <t t-if="line.product_id.product_tmpl_id.pos_categ_id.name == categ[0]">
+                              <t t-set="this_prod_amount" t-value="prod_amounts.get(line.product_id.name, 0)"/>
+                              <t t-esc="prod_amounts.update({line.product_id.name: this_prod_amount + line.price_subtotal_incl})"/>
+                          </t>
+                      </t>
+                  </t>
+                  <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="prod_amounts.items()" t-as="prod">
+                            <td width="80%"><t t-esc="prod[0]"/></td>
+                            <td width="20%">$<t t-esc="prod[1]"/></td>
+                        </tr>
+                    </tbody>
+                  </table>
+
+            </t>
+        </div>
+        </div>
+        </div>
+        </t>
+    </t>
+</t>
