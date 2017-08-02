@@ -1,0 +1,91 @@
+Sub CreatingMultipleCSV()
+
+Dim sht As Worksheet
+Dim LastRow As Long
+Dim DataRange As Range
+Dim Batches
+Dim RoundBatches
+Dim LastColumn As Long
+Dim xWs As Worksheet
+Dim xDir As String
+Dim folder As FileDialog
+Dim i As Integer
+Dim Main As Worksheet
+Dim x As Integer
+Dim myValue As Variant
+
+
+Set sht = ActiveWorkbook.ActiveSheet
+myValue = InputBox("Type the number of rows you would like per sheet:")
+
+'Renaming First Sheet
+ActiveSheet.Select
+ActiveSheet.Name = "Main"
+
+'Finding the Last Row & Column
+LastRow = ActiveSheet.UsedRange.Rows.Count
+LastColumn = ActiveSheet.UsedRange.Columns.Count
+
+'Defining # of Loops we need (i.e. how many sheets we need to export
+Batches = (LastRow / myValue)
+RoundBatches = Round(Batches + 0.5, 0)
+
+'Creating sheets necessary for amount of batches
+
+ActiveSheet.Range(Cells(1, 1), Cells(1, LastColumn)).Copy
+
+For i = 1 To RoundBatches
+    Sheets.Add After:=ActiveSheet
+    Range("A1").Select
+    ActiveSheet.Paste
+    ActiveSheet.Name = i
+Next i
+
+'Returning to main worksheet
+Worksheets("Main").Activate
+x = 1
+
+'Loop copying data into each seperate sheet
+For x = 1 To RoundBatches
+Dim b As String
+b = x
+Worksheets("Main").Activate
+ActiveSheet.Range(Cells((((x * myValue) + 1) - myValue) + 1, 1), Cells((x * myValue) + 1, LastColumn)).Copy
+Worksheets(b).Activate
+Range("A2").Select
+ActiveSheet.Paste
+Next x
+
+'Exporting Each Sheet as a CSV
+Set folder = Application.FileDialog(msoFileDialogFolderPicker)
+If folder.Show <> -1 Then Exit Sub
+xDir = folder.SelectedItems(1)
+For Each xWs In Application.ActiveWorkbook.Worksheets
+xWs.SaveAs xDir & "\" & xWs.Name, xlCSV
+Next
+
+'//OTHER WAYS TO FIND THE LAST ROW//
+'Using UsedRange
+  'sht.UsedRange 'Refresh UsedRange
+  'LastRow = sht.UsedRange.Rows(sht.UsedRange.Rows.Count).Row
+'Using Table Range
+ ' LastRow = sht.ListObjects("Table1").Range.Rows.Count
+'Using Named Range
+ 'LastRow = sht.Range("MyNamedRange").Rows.Count
+'Ctrl + Shift + Down (Range should be first cell in data set)
+ ' LastRow = sht.Range("A1").CurrentRegion.Rows.Count
+ '//END//
+ 
+ '//OTHER WAYS TO FIND THE LAST COLUMNS//
+ 'Using UsedRange
+ ' sht.UsedRange 'Refresh UsedRange
+ ' LastColumn = sht.UsedRange.Columns(sht.UsedRange.Columns.Count).Column
+'Using Table Range
+'  LastColumn = sht.ListObjects("Table1").Range.Columns.Count
+'Using Named Range
+'  LastColumn = sht.Range("MyNamedRange").Columns.Count
+'Ctrl + Shift + Right (Range should be first cell in data set)
+'  LastColumn = sht.Range("A1").CurrentRegion.Columns.Count
+'//END//
+
+End Sub

@@ -1,0 +1,55 @@
+Sub CondenseCol()
+
+'Input box asking what is the character seperating each of the values
+myValue = InputBox("Type how the data is seperated (e.g. ", "):")
+
+'Selecting the first column and running text to colums procedure.
+    Columns(1).Select
+    ActiveSheet.Columns(1).RemoveDuplicates Columns:=1, Header:=xlNo
+    Selection.TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=False, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=True, OtherChar _
+        :=myValue, FieldInfo:=Array(Array(1, 1), Array(2, 1)), TrailingMinusNumbers:=True
+
+'Determining how many columns there are from the text to columns output
+    ActiveSheet.Select
+    LastCol = ActiveSheet.UsedRange.Columns.Count
+    Sheets.Add
+    ActiveSheet.Next.Select
+    
+'Removing all of the blanks from the text to columns output
+For i = 1 To LastCol
+    
+    Columns(i).Select
+    Selection.SpecialCells(xlCellTypeConstants, 23).Select
+    Selection.Copy
+    ActiveSheet.Previous.Select
+    Cells(1, i).Select
+    ActiveSheet.Paste
+    ActiveSheet.Next.Select
+    Next i
+    
+'After All Blanks Have Been Removed It will condense all columns into one
+    ActiveSheet.Previous.Select
+    Selection.Cut
+    Selection.End(xlToLeft).Select
+    Selection.End(xlDown).Select
+    ActiveCell.Offset(1, 0).Select
+    ActiveSheet.Paste
+
+For i = 1 To (LastCol - 2)
+
+    Columns(LastCol - i).Select
+    Selection.SpecialCells(xlCellTypeConstants, 23).Select
+    Selection.Cut
+    Selection.End(xlToLeft).Select
+    Selection.End(xlDown).Select
+    ActiveCell.Offset(1, 0).Select
+    ActiveSheet.Paste
+    Next i
+
+'removing the last set of duplicated vlaues to only leave the unique values
+    Columns(1).Select
+    ActiveSheet.Columns(1).RemoveDuplicates Columns:=1, Header:=xlNo
+
+End Sub
