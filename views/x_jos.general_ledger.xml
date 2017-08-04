@@ -13,21 +13,34 @@
         <t t-foreach="docs" t-as="o">
 
                    <t>
-                        <t t-set="this_account_amount" t-value="accounts_amounts.get(o.account_id.code, ['',0,0])"/>
-                        <t t-esc="accounts_amounts.update({o.account_id.code: [o.account_id.name, this_account_amount[1] + o.debit,this_account_amount[2] + o.credit]})"/>
+                        <t t-set="this_account_amount" t-value="accounts_amounts.get(o.account_id.code, ['',0,0,False,False,False])"/>
+                        <t t-esc="accounts_amounts.update({o.account_id.code: [o.account_id.name, this_account_amount[1] + o.debit,this_account_amount[2] + o.credit,o.account_id.user_type_id.include_initial_balance,o.account_id.x_group_reference,o.account_id.x_group_batch]})"/>
                    </t>
         </t>
         <t t-set="sortedaccounts" t-value="accounts_amounts.keys()"/>
         <t t-esc="sortedaccounts.sort()"/>
 
+<!--t-if="accounts_amounts[accountman][4]"-->
 
         <t t-foreach="sortedaccounts" t-as="accountman">
             <t t-set="entry_amounts" t-value="{}"/>
             <t t-set="sortedentries" t-value="[]"/>
-            <t t-foreach="docs" t-as="l">
+            <t t-if="not accounts_amounts[accountman][4] and not accounts_amounts[accountman][5]" t-foreach="docs" t-as="l">
                    <t t-if="l.account_id.code == accountman">
                         <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.name, ['',0,0,'',''])"/>
                         <t t-esc="entry_amounts.update({l.move_id.name: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name]})"/>
+                   </t>
+            </t>
+            <t t-if="accounts_amounts[accountman][4]" t-foreach="docs" t-as="l">
+                   <t t-if="l.account_id.code == accountman">
+                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.ref, ['',0,0,'',''])"/>
+                        <t t-esc="entry_amounts.update({l.move_id.ref: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name]})"/>
+                   </t>
+            </t>
+            <t t-if="accounts_amounts[accountman][5]" t-foreach="docs" t-as="l">
+                   <t t-if="l.account_id.code == accountman">
+                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.payment_id.batch_deposit_id.id, ['',0,0,'','','',''])"/>
+                        <t t-esc="entry_amounts.update({l.payment_id.batch_deposit_id.id: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.payment_id.batch_deposit_id.id,'',l.payment_id.batch_deposit_id.name,l.payment_id.batch_deposit_id.date]})"/>
                    </t>
             </t>
             <t t-set="sortedentries" t-value="[ (v,k) for k,v in entry_amounts.iteritems() ]"/>
@@ -50,10 +63,10 @@
             <t t-if="float((sortedentries[0][0][0][:7])[5:]) &lt;= lastmonth">
                 <t t-set="minlimit" t-value="str(int(sortedentries[0][0][0][:4])-1)+ '-' + lastmonth + '-'+ lastday"/>
             </t>
-            <t t-if="accountman == '120-00' or accountman == '210-00'">
+            <t t-if="accounts_amounts[accountman][3]">
               <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
             </t>
-            <t t-if="accountman != '120-00' and accountman != '210-00'">
+            <t t-if="not accounts_amounts[accountman][3]">
               <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('date', '&gt;', minlimit),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
             </t>
             <t t-set="totaldebit" t-value="0"/>
@@ -72,7 +85,7 @@
             <table style="font-size: 80%;" class="table table-condensed">
                 <thead>
                     <tr>
-                        <th>Journal Entry</th>
+                        <th><span t-esc="'Acc:' + str(accountman)"/></th>
                         <th>Date</th>
                         <th>Memo</th>
                         <th>Partner</th>
@@ -98,8 +111,14 @@
                         <t>
                             <t t-set="balance" t-value="balance + (entryman[0][1] - entryman[0][2])"/>
                         </t>
-                           <td width="10%"><span t-esc="entryman[1]"/></td>
-                           <td width="15%"><span t-esc="entryman[0][0]"/></td>
+                          <t t-if="accounts_amounts[accountman][5]">
+                            <td  width="10%"><span t-esc="entryman[0][6]"/></td>
+                            <td width="15%"><span t-esc="entryman[0][7]"/></td>
+                          </t>
+                          <t t-if="not accounts_amounts[accountman][5]">
+                            <td  width="10%"><span t-esc="entryman[1]"/></td>
+                            <td width="15%"><span t-esc="entryman[0][0]"/></td>
+                          </t>
                            <td width="20%"><span t-esc="entryman[0][4]"/></td>
                            <td width="25%"><span t-esc="entryman[0][5]"/></td>
                            <!--<td width="20%"><span t-esc="entryman[0][3]"/></td>-->
@@ -107,6 +126,24 @@
                            <td class="text-right" width="10%"><span t-esc="entryman[0][2]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
                            <td class="text-right" width="10%"><span t-esc="balance" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
                     </tr>
+                    <!--<tr t-if="accounts_amounts[accountman][4]">
+                      <td width="10%"><span><strong>No Ref</strong></span></td>
+                      <td width="15%"><span> </span></td>
+                      <td width="20%"><span> </span></td>
+                      <td width="25%"><span> </span></td>
+                      <td class="text-right" width="10%"><span> </span></td>
+                      <td class="text-right" width="10%"><span> </span></td>
+                      <td class="text-right" width="10%"><span t-esc="((accounts_amounts[accountman][1] + totaldebit) - (accounts_amounts[accountman][2]+totalcredit)) - balance" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
+                    </tr>
+                    <tr t-if="accounts_amounts[accountman][5]">
+                      <td width="10%"><span><strong>No Batch</strong></span></td>
+                      <td width="15%"><span> </span></td>
+                      <td width="20%"><span> </span></td>
+                      <td width="25%"><span> </span></td>
+                      <td class="text-right" width="10%"><span> </span></td>
+                      <td class="text-right" width="10%"><span> </span></td>
+                      <td class="text-right" width="10%"><span t-esc="((accounts_amounts[accountman][1] + totaldebit) - (accounts_amounts[accountman][2]+totalcredit)) - balance" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
+                    </tr>-->
                 </tbody>
             </table>
             </t>
