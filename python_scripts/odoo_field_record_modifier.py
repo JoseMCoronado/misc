@@ -34,8 +34,8 @@ reader = csv.reader(f)
 next(reader, None)  # skip the headers
 for row in reader:
     try:
-        models.execute_kw(db, uid, password, 'res.partner', 'write', [[int(row[0])], {
-        'email': row[1],
+        models.execute_kw(db, uid, password, 'stock.quant', 'write', [[int(row[0])], {
+        'location_id': int(row[1]),
     }])
         print row[0] + '/updated'
     except:
