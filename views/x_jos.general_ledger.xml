@@ -74,10 +74,16 @@
             <t t-if="float((sortedentries[0][0][0][:7])[5:]) &lt;= lastmonth">
                 <t t-set="minlimit" t-value="str(int(sortedentries[0][0][0][:4])-1)+ '-' + lastmonth + '-'+ lastday"/>
             </t>
-            <t t-if="accounts_amounts[accountman][3]">
+            <t t-if="accounts_amounts[accountman][3] and not (accounts_amounts[accountman][5] or accounts_amounts[accountman][4])">
+              <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
+            </t>
+            <t t-if="not accounts_amounts[accountman][3] and not (accounts_amounts[accountman][5] or accounts_amounts[accountman][4])">
+              <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('date', '&gt;', minlimit),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
+            </t>
+            <t t-if="accounts_amounts[accountman][3] and (accounts_amounts[accountman][5] or accounts_amounts[accountman][4])">
               <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('date', '&lt;', sortedentries2[0][0][0]),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
             </t>
-            <t t-if="not accounts_amounts[accountman][3]">
+            <t t-if="not accounts_amounts[accountman][3] and (accounts_amounts[accountman][5] or accounts_amounts[accountman][4])">
               <t t-set="previousitems" t-value="env['account.move.line'].sudo().search([('date', '&lt;', sortedentries[0][0][0]),('date', '&lt;', sortedentries2[0][0][0]),('date', '&gt;', minlimit),('account_id.code', '=', accountman),('move_id.state', '=', 'posted')])"/>
             </t>
             <t t-set="totaldebit" t-value="0"/>
