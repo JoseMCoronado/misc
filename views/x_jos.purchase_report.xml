@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<t t-name="__export__.ir_ui_view_942">
+    <t t-call="report.html_container">
+        <t t-call="report.internal_layout">
+        <div class="page">
+        <div align="center" class="row">
+            <h1>Purchasing Report</h1>
+        </div>
+
+        <div class="row">
+
+        <t t-set="vendors" t-value="{}"/>
+        <t t-set="sortedvendors" t-value="[]"/>
+
+        <t t-foreach="docs" t-as="o">
+           <t t-if="o.x_primary_vendor">
+                <t t-set="this_vendor" t-value="vendors.get(o.x_primary_vendor.id, ['','','','','',''])"/>
+                <t t-esc="vendors.update({o.x_primary_vendor.id: [
+                  o.x_primary_vendor.ref,
+                  o.x_primary_vendor.name,
+                  o.x_primary_vendor.street,
+                  o.x_primary_vendor.street2,
+                  o.x_primary_vendor.state_id.code,
+                  o.x_primary_vendor.zip,
+                  ]})"/>
+            </t>
+        </t>
+
+        <t t-set="sortedvendors" t-value="[ (v,k) for k,v in vendors.iteritems() ]"/>
+        <t t-esc="sortedvendors.sort()"/>
+
+        <t t-foreach="sortedvendors" t-as="vendorman">
+            <table style="background-color:#F4FBFF; border-top: thick #0087D3" class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th> </th>
+                    <th>State</th>
+                    <th>Zip</th>
+                  </tr>
+                </thead>
+                <tr>
+                    <td width="10%"><span t-esc="vendorman[0][0]" /></td>
+                    <td width="20%"><span t-esc="vendorman[0][1]" /></td>
+                    <td width="30%"><span t-esc="vendorman[0][2]" /></td>
+                    <td width="20%"><span t-esc="vendorman[0][3]" /></td>
+                    <td width="10%"><span t-esc="vendorman[0][4]" /></td>
+                    <td width="10%"><span t-esc="vendorman[0][5]" /></td>
+                </tr>
+            </table>
+            <table style="font-size: 80%;" class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>CAT</th>
+                        <th>Product #</th>
+                        <th colspan="7">Description</th>
+                        <th>QOH</th>
+                        <th>Incoming</th>
+                        <th>Outgoing</th>
+                        <th>Net Available</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody class="invoice_tbody">
+                  <t t-foreach="docs" t-as="l">
+                      <!--<t t-set="year" t-value="[1,2,3,4,5,6,7,8,9,10,11,12]"/>
+                      <t t-set="currentmonth" t-value="year.index(int(datetime.datetime.now().month))"/>
+                      <t t-set="month_list" t-value="[]"/>
+                      <t t-esc="for item in year[currentmonth::-1]: month_list.append(item)"/>
+                      <t t-set="diff" t-value="len(year) - len(month_list)"/>
+                      <t t-set="add_month" t-value="year[-diff::1]"/>
+                      <t t-set="final_list" t-value="month_list + add_month[::-1]"/>-->
+                      <t t-set="m11s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-1).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m10s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-2).strftime('%Y-%m-1 00:00:00')"/>
+                      <!--<t t-set="m9s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-3).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m8s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-4).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m7s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-5).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m6s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-6).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m5s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-7).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m4s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-8).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m3s" t-value="datetime.datetime.now().replace(month=12).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m2s" t-value="datetime.datetime.now().replace(month=11).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m1s" t-value="datetime.datetime.now().replace(month=10).strftime('%Y-%m-1 00:00:00')"/>-->
+
+                      <t t-set="m12entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-12-1 00:00:00')),('x_date_order','&lt;=',datetime.datetime.now().strftime('%Y-12-31 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m12" t-value="sum([o.product_uom_qty for o in m12entries])"/>
+                      <t t-set="m11entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-11-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-12-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m11" t-value="sum([o.product_uom_qty for o in m11entries])"/>
+                      <t t-set="m10entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-10-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-11-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m10" t-value="sum([o.product_uom_qty for o in m10entries])"/>
+                      <t t-set="m9entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-9-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-10-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m9" t-value="sum([o.product_uom_qty for o in m9entries])"/>
+                      <t t-set="m8entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-8-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-9-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m8" t-value="sum([o.product_uom_qty for o in m8entries])"/>
+                      <t t-set="m7entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-7-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-8-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m7" t-value="sum([o.product_uom_qty for o in m7entries])"/>
+                      <t t-set="m6entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-6-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-7-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m6" t-value="sum([o.product_uom_qty for o in m6entries])"/>
+                      <t t-set="m5entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-5-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-6-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m5" t-value="sum([o.product_uom_qty for o in m5entries])"/>
+                      <t t-set="m4entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-4-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-5-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m4" t-value="sum([o.product_uom_qty for o in m4entries])"/>
+                      <t t-set="m3entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-3-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-4-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m3" t-value="sum([o.product_uom_qty for o in m3entries])"/>
+                      <t t-set="m2entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-2-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-3-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m2" t-value="sum([o.product_uom_qty for o in m2entries])"/>
+                      <t t-set="m1entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-1-1 00:00:00')),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-2-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="m1" t-value="sum([o.product_uom_qty for o in m1entries])"/>
+
+                      <t t-set="d12entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-%m-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="d12" t-value="sum([o.product_uom_qty for o in d12entries])"/>
+                      <t t-set="d11entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',m11s),('x_date_order','&lt;',datetime.datetime.now().strftime('%Y-%m-1 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="d11" t-value="sum([o.product_uom_qty for o in d11entries])"/>
+                      <t t-set="d10entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',m10s),('x_date_order','&lt;',m11s),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
+                      <t t-set="d10" t-value="sum([o.product_uom_qty for o in d10entries])"/>
+
+                      <div>
+                        <h1><span t-esc="final_list"/></h1>
+                      </div>
+                      <tr t-if="l.x_primary_vendor.ref == vendorman[0][0]">
+                        <td width="10%"><span t-esc="l.categ_id.x_code"/></td>
+                        <td width="10%"><span t-esc="l.default_code"/></td>
+                        <td colspan="7" width="30%"><span t-esc="l.name"/></td>
+                        <td width="10%"><span t-esc="l.qty_available"/></td>
+                        <td width="10%"><span t-esc="l.incoming_qty"/></td>
+                        <td width="10%"><span t-esc="l.outgoing_qty"/></td>
+                        <td width="10%"><span t-esc="l.virtual_available"/></td>
+                        <td width="10%"><span t-esc="l.standard_price"/></td>
+                      </tr>
+                      <tr style="background-color:#d3d3d3;" t-if="l.x_primary_vendor.ref == vendorman[0][0]">
+                        <td width="10%"> </td>
+                        <td width="5%"><span>1</span></td>
+                        <td width="5%"><span>2</span></td>
+                        <td width="5%"><span>3</span></td>
+                        <td width="5%"><span>4</span></td>
+                        <td width="5%"><span>5</span></td>
+                        <td width="5%"><span>6</span></td>
+                        <td width="5%"><span>7</span></td>
+                        <td width="5%"><span>8</span></td>
+                        <td width="5%"><span>9</span></td>
+                        <td width="5%"><span>10</span></td>
+                        <td width="5%"><span>11</span></td>
+                        <td width="5%"><span>12</span></td>
+                        <td width="10%"><span>90Avg</span></td>
+                      </tr>
+                      <tr style="background-color:#d3d3d3;" t-if="l.x_primary_vendor.ref == vendorman[0][0]">
+                        <td width="10%"><span>History:</span></td>
+                        <td width="5%"><span t-esc="m1"/></td>
+                        <td width="5%"><span t-esc="m2"/></td>
+                        <td width="5%"><span t-esc="m3"/></td>
+                        <td width="5%"><span t-esc="m4"/></td>
+                        <td width="5%"><span t-esc="m5"/></td>
+                        <td width="5%"><span t-esc="m6"/></td>
+                        <td width="5%"><span t-esc="m7"/></td>
+                        <td width="5%"><span t-esc="m8"/></td>
+                        <td width="5%"><span t-esc="m9"/></td>
+                        <td width="5%"><span t-esc="m10"/></td>
+                        <td width="5%"><span t-esc="m11"/></td>
+                        <td width="5%"><span t-esc="m12"/></td>
+                        <td width="10%"><span t-esc="round((d10+d11+d12)/3,2)"/></td>
+                      </tr>
+                      <tr style="background-color:#d3d3d3;" t-if="l.x_primary_vendor.ref == vendorman[0][0]">
+                        <td colspan="10"><span>Comments:</span></td>
+                        <td class="text-right"><span>Product Status:</span></td>
+                        <td colspan="1"><span t-esc="l.x_status"/></td>
+                        <td class="text-right"><span>Location:</span></td>
+                        <td colspan="2"><span t-esc="l.location_id.name"/></td>
+                      </tr>
+                    </t>
+                </tbody>
+            </table>
+            </t>
+            </div>
+            </div>
+        </t>
+    </t>
+</t>
