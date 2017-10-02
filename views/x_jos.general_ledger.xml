@@ -27,28 +27,29 @@
             <t t-set="sortedentries2" t-value="[]"/>
             <t t-if="not accounts_amounts[accountman][4] and not accounts_amounts[accountman][5]" t-foreach="docs" t-as="l">
                    <t t-if="l.account_id.code == accountman">
-                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.name, ['',0,0,'',''])"/>
-                        <t t-esc="entry_amounts.update({l.move_id.name: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name]})"/>
+                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.name, ['',0,0,'','','',''])"/>
+                        <t t-esc="entry_amounts.update({l.move_id.name: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name,l.payment_id.communication,l.payment_id.check_number]})"/>
                    </t>
             </t>
             <t t-if="accounts_amounts[accountman][4]" t-foreach="docs" t-as="l">
                    <t t-if="l.account_id.code == accountman and l.move_id.ref != False">
-                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.ref, ['',0,0,'',''])"/>
-                        <t t-esc="entry_amounts.update({l.move_id.ref: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name]})"/>
+                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.move_id.ref, ['',0,0,'','','',''])"/>
+                        <t t-esc="entry_amounts.update({l.move_id.ref: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name,l.payment_id.communication,l.payment_id.check_number]})"/>
                    </t>
                    <t t-if="l.account_id.code == accountman and l.move_id.ref == False">
-                        <t t-set="this_entry2_amount" t-value="entry2_amounts.get(l.move_id.name, ['',0,0,'',''])"/>
-                        <t t-esc="entry2_amounts.update({l.move_id.name: [l.date,this_entry2_amount[1] + l.debit,this_entry2_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name]})"/>
+                        <t t-set="this_entry2_amount" t-value="entry2_amounts.get(l.move_id.name, ['',0,0,'','','',''])"/>
+                        <t t-esc="entry2_amounts.update({l.move_id.name: [l.date,this_entry2_amount[1] + l.debit,this_entry2_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name,l.payment_id.communication,l.payment_id.check_number]})"/>
                    </t>
             </t>
+
             <t t-if="accounts_amounts[accountman][5]" t-foreach="docs" t-as="l">
                    <t t-if="l.account_id.code == accountman and l.payment_id.batch_deposit_id.id != False">
-                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.payment_id.batch_deposit_id.id, ['',0,0,'','','',''])"/>
-                        <t t-esc="entry_amounts.update({l.payment_id.batch_deposit_id.id: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.payment_id.batch_deposit_id.id,'',l.payment_id.batch_deposit_id.name,l.payment_id.batch_deposit_id.date]})"/>
+                        <t t-set="this_entry_amount" t-value="entry_amounts.get(l.payment_id.batch_deposit_id.id, ['',0,0,'','','','','',''])"/>
+                        <t t-esc="entry_amounts.update({l.payment_id.batch_deposit_id.id: [l.date,this_entry_amount[1] + l.debit,this_entry_amount[2] + l.credit,l.account_id.name,l.payment_id.batch_deposit_id.id,'',l.payment_id.batch_deposit_id.name,l.payment_id.batch_deposit_id.date,l.payment_id.communication,l.payment_id.check_number]})"/>
                    </t>
                    <t t-if="l.account_id.code == accountman and l.payment_id.batch_deposit_id.id == False">
-                        <t t-set="this_entry2_amount" t-value="entry2_amounts.get(l.move_id.name, ['',0,0,'','','',''])"/>
-                        <t t-esc="entry2_amounts.update({l.move_id.name: [l.date,this_entry2_amount[1] + l.debit,this_entry2_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name,l.payment_id.batch_deposit_id.name,l.payment_id.batch_deposit_id.date]})"/>
+                        <t t-set="this_entry2_amount" t-value="entry2_amounts.get(l.move_id.name, ['',0,0,'','','','','',''])"/>
+                        <t t-esc="entry2_amounts.update({l.move_id.name: [l.date,this_entry2_amount[1] + l.debit,this_entry2_amount[2] + l.credit,l.account_id.name,l.move_id.ref,l.partner_id.name,l.payment_id.batch_deposit_id.name,l.payment_id.batch_deposit_id.date,l.payment_id.communication,l.payment_id.check_number]})"/>
                    </t>
 
             </t>
@@ -104,6 +105,7 @@
                     <tr>
                         <th><span t-esc="'Acc:' + str(accountman)"/></th>
                         <th>Date</th>
+                        <th>Check#</th>
                         <th>Memo</th>
                         <th>Partner</th>
                         <!--<th>Account</th>-->
@@ -117,8 +119,9 @@
                     <t t-set="balance" t-value="totaldebit - totalcredit"/>
                     <tr>
                       <td width="10%"><span><strong>Initial Balance</strong></span></td>
-                      <td width="15%"><span> </span></td>
-                      <td width="20%"><span> </span></td>
+                      <td width="10%"><span> </span></td>
+                      <td width="10%"><span> </span></td>
+                      <td width="25%"><span> </span></td>
                       <td width="25%"><span> </span></td>
                       <td class="text-right" width="10%"><span t-esc="totaldebit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
                       <td class="text-right" width="10%"><span t-esc="totalcredit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
@@ -130,13 +133,17 @@
                         </t>
                           <t t-if="accounts_amounts[accountman][5]">
                             <td  width="10%"><span t-esc="entryman[0][6]"/></td>
-                            <td width="15%"><span t-esc="entryman[0][7]"/></td>
+                            <td width="10%"><span t-esc="entryman[0][7]"/></td>
+                            <td width="10%"><span> </span></td>
+                            <!--<td width="10%"><span t-esc="entryman[0][8]"/></td>-->
                           </t>
                           <t t-if="not accounts_amounts[accountman][5]">
                             <td  width="10%"><span t-esc="entryman[1]"/></td>
-                            <td width="15%"><span t-esc="entryman[0][0]"/></td>
+                            <td width="10%"><span t-esc="entryman[0][0]"/></td>
+                            <td width="10%"><span> </span></td>
+                            <!--<td width="10%"><span t-esc="entryman[0][6]"/></td>-->
                           </t>
-                           <td width="20%"><span t-esc="entryman[0][4]"/></td>
+                           <td width="15%"><span t-esc="entryman[0][4]"/></td>
                            <td width="25%"><span t-esc="entryman[0][5]"/></td>
                            <!--<td width="20%"><span t-esc="entryman[0][3]"/></td>-->
                            <td class="text-right" width="10%"><span t-esc="entryman[0][1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs[0].company_id.currency_id}"/></td>
@@ -150,6 +157,8 @@
                             </t>
                             <td  width="10%"><span t-esc="entryman[1]"/></td>
                             <td width="15%"><span t-esc="entryman[0][0]"/></td>
+                            <td t-if="accounts_amounts[accountman][5]" width="10%"><span t-if="entryman[0][9] != 0" t-esc="entryman[0][9]"/><span t-if="entryman[0][9] != False and entryman[0][9] == 0" t-esc="entryman[0][8]"/></td>
+                            <td t-if="not accounts_amounts[accountman][5]" width="10%"><span t-if="entryman[0][7] != 0" t-esc="entryman[0][7]"/><span t-if="entryman[0][7] != False and entryman[0][7] == 0" t-esc="entryman[0][6]"/></td>
 
                            <td width="20%">
                              <t t-if="len(str(entryman[0][4]))&gt;50 and entryman[0][4] != False"><span t-esc="str(entryman[0][4])[0:50] + '...'"/></t>
