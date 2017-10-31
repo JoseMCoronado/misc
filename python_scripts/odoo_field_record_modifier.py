@@ -34,9 +34,13 @@ reader = csv.reader(f)
 next(reader, None)  # skip the headers
 for row in reader:
     try:
-        models.execute_kw(db, uid, password, 'stock.quant', 'write', [[int(row[0])], {
-        'location_id': int(row[1]),
-    }])
+        models.execute_kw(db, uid, password, 'product.product', 'write', [[int(row[0])], {
+        'x_cubic_meters': float(row[1]) or 0,
+        'x_dimension_d': float(row[2])  or 0,
+        'x_dimension_h': float(row[3])  or 0,
+        'x_dimension_w': float(row[4])  or 0,
+        'weight': float(row[5]) or 0,
+        }])
         print row[0] + '/updated'
     except:
         print  row[0] + '/error'

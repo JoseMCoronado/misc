@@ -65,24 +65,8 @@
                 </thead>
                 <tbody class="invoice_tbody">
                   <t t-foreach="docs" t-as="l">
-                      <!--<t t-set="year" t-value="[1,2,3,4,5,6,7,8,9,10,11,12]"/>
-                      <t t-set="currentmonth" t-value="year.index(int(datetime.datetime.now().month))"/>
-                      <t t-set="month_list" t-value="[]"/>
-                      <t t-esc="for item in year[currentmonth::-1]: month_list.append(item)"/>
-                      <t t-set="diff" t-value="len(year) - len(month_list)"/>
-                      <t t-set="add_month" t-value="year[-diff::1]"/>
-                      <t t-set="final_list" t-value="month_list + add_month[::-1]"/>-->
-                      <t t-set="m11s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-1).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m10s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-2).strftime('%Y-%m-1 00:00:00')"/>
-                      <!--<t t-set="m9s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-3).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m8s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-4).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m7s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-5).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m6s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-6).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m5s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-7).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m4s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-8).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m3s" t-value="datetime.datetime.now().replace(month=12).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m2s" t-value="datetime.datetime.now().replace(month=11).strftime('%Y-%m-1 00:00:00')"/>
-                      <t t-set="m1s" t-value="datetime.datetime.now().replace(month=10).strftime('%Y-%m-1 00:00:00')"/>-->
+                      <t t-set="m11s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-1,day=1).strftime('%Y-%m-1 00:00:00')"/>
+                      <t t-set="m10s" t-value="datetime.datetime.now().replace(month=datetime.datetime.now().month-2,day=1).strftime('%Y-%m-1 00:00:00')"/>
 
                       <t t-set="m12entries" t-value="env['sale.order.line'].sudo().search([('x_date_order','&gt;=',datetime.datetime.now().strftime('%Y-12-1 00:00:00')),('x_date_order','&lt;=',datetime.datetime.now().strftime('%Y-12-31 00:00:00')),('product_id', 'in', l.product_variant_ids.ids),('product_id', 'in', l.product_variant_ids.ids),('state', 'in', ['sale','done'])])"/>
                       <t t-set="m12" t-value="sum([o.product_uom_qty for o in m12entries])"/>
