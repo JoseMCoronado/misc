@@ -6,21 +6,23 @@ print """
 |                     By Jose M. Coronado                         |
 +-----------------------------------------------------------------+
 """
+file_type = raw_input("File Type (Local Path='local' or Online='url'): ")
+if file_type != 'local' and file_type != 'url':
+    close_type = raw_input("File type %s is not 'url' or 'local'." % (file_type))
+    exit()
+
+import_type = raw_input("Import Type (Product Image='product' or Multi-Image='multi'): ")
+if import_type != 'product' and import_type != 'multi':
+    close_type = raw_input("Import type %s is not 'product' or 'multi'." % (import_type))
+    exit()
+
 ##Configuration
 url = raw_input("Database URL (e.g. https://mydatabase.odoo.com): ")
 db = raw_input("Database Name (e.g. mydatabase): ")
 username = raw_input("Login (e.g. admin@mydatabase.com): ")
 password = raw_input("Password (e.g. admin): ")
 
-file_type = raw_input("File Type (Local Path='local' or Online='url'): ")
-if file_type != 'local' or file_type != 'url':
-    close_type = raw_input("File type %s is not 'url' or 'local'." % (file_type))
-    exit()
 
-import_type = raw_input("Import Type (Product Image='product' or Multi-Image='multi'): ")
-if import_type != 'product' or import_type != 'multi':
-    close_type = raw_input("Import type %s is not 'product' or 'multi'." % (import_type))
-    exit()
 
 ##Importing Libraries
 import xmlrpclib
@@ -52,18 +54,22 @@ from tkFileDialog import askopenfilename
 Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 var = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 print "You Selected ", var
+
+count = open(var)
+reader_count = csv.reader(count)
+total_row = sum(1 for row in reader_count)
+print "Total Rows in file:" + str(total_row)
+
 f = open(var)
 reader = csv.reader(f)
-
 next(reader, None)  # skip the headers
 
 row_num = 0
-total_row = len(reader)
 error_list = []
 
 for row in reader:
     row_num += 1
-    print(str(round(row_num/total_row,0)*100) + "%")
+    print str(round((float(row_num)/float(total_row))*100,2)) +"%"
     try:
         if file_type == 'url':
             g = urllib.urlopen(row[2])
@@ -87,7 +93,7 @@ for row in reader:
         continue
     except:
         print('error')
-        error_list.append('Error @ row %s for id %f' % (row_num,row[0]))
+        error_list.append('Error @ row %s for id %s' % (row_num,row[0]))
         continue
 
 for e in error_list:
