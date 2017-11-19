@@ -4,6 +4,7 @@ url = raw_input("Database URL (e.g. https://mydatabase.odoo.com): ")
 db = raw_input("Database Name (e.g. mydatabase): ")
 username = raw_input("Login (e.g. admin@mydatabase.com): ")
 password = raw_input("Password (e.g. admin): ")
+model = raw_input("Model (e.g. product.template): ")
 
 ##Importing Libraries
 import xmlrpclib

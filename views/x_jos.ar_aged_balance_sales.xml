@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<t t-name="__export__.ir_ui_view_943">
+  <t t-call="report.html_container">
+
+    <t t-set="salespersons" t-value="{}"/>
+    <t t-set="sortedsalespersons" t-value="[]"/>
+    <t t-set="customers" t-value="{}"/>
+    <t t-set="sortedcustomers" t-value="[]"/>
+
+    <t t-foreach="docs" t-as="o">
+      <t t-set="this_salesperson" t-value="salespersons.get(o.user_id.id, [''])"/>
+      <t t-esc="salespersons.update({o.user_id.id: [
+        o.user_id.name,
+        ]})"/>
+      <t t-set="this_customer" t-value="customers.get(o.partner_id.id, ['','','','','','','',''])"/>
+      <t t-esc="customers.update({o.partner_id.id: [
+        o.partner_id.ref,
+        o.partner_id.name,
+        o.partner_id.phone,
+        o.partner_id.mobile,
+        o.partner_id.email,
+        o.partner_id.credit,
+        o.partner_id.credit_limit,
+        o.partner_id.parent_id.id,
+        ]})"/>
+    </t>
+
+    <t t-set="sortedsalespersons" t-value="[ (v,k) for k,v in salespersons.iteritems() ]"/>
+    <t t-esc="sortedsalespersons.sort()"/>
+    <t t-set="sortedcustomers" t-value="[ (v,k) for k,v in customers.iteritems() ]"/>
+    <t t-esc="sortedcustomers.sort()"/>
+
+    <t t-foreach="sortedsalespersons" t-as="sales">
+      <t t-call="report.internal_layout">
+        <div class="page">
+          <div align="center" class="row">
+            <div>
+              <h1>Aged A/R Balance by Saleperson</h1>
+            </div>
+            <div>
+              <h5><span t-esc="sales[0][0]"/></h5>
+            </div>
+          </div>
+          <div class="row" style="page-break-inside: avoid;">
+            <t t-foreach="sortedcustomers" t-as="customer">
+              <t t-if="any((p.partner_id.id == customer[1] or p.partner_id.id == customer[0][7]) and p.user_id.id == sales[1] for p in docs)">
+                <h4><span t-esc="customer[0][1]"/></h4>
+                <table style="background-color:#F4FBFF; border-top: thick #0087D3; page-break-inside: avoid;" class="table table-condensed">
+                    <thead>
+                      <tr>
+                        <th>Ref</th>
+                        <th>Phone</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Credit</th>
+                        <th>Credit Limit</th>
+                      </tr>
+                    </thead>
+                    <tr>
+                        <td width="10%"><span t-esc="customer[0][0]" /></td>
+                        <td width="20%" style="margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span t-esc="customer[0][2]" /></td>
+                        <td width="20%" style="margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span t-esc="customer[0][3]" /></td>
+                        <td width="30%" style="margin: 0; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span t-esc="customer[0][4]" /></td>
+                        <td width="10%"><span t-esc="customer[0][5]" /></td>
+                        <td width="10%"><span t-esc="customer[0][6]" /></td>
+                    </tr>
+                </table>
+                <table style="font-size: 80%;" class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Invoice Date</th>
+                            <th>Due Date</th>
+                            <th>Age</th>
+                            <th>Invoice Total</th>
+                            <th>Amount Due</th>
+                        </tr>
+                    </thead>
+                    <tbody class="invoice_tbody">
+                      <t t-foreach="docs.sorted(key=lambda r: r.date_due)" t-as="l">
+                          <tr t-if="l.type == 'out_invoice' and (l.partner_id.id == customer[1] or l.partner_id.id == customer[0][7]) and l.user_id.id == sales[1]">
+                              <t t-if="l.date_due">
+                                <t t-set="due" t-value="datetime.datetime.strptime(l.date_due, '%Y-%m-%d')"/>
+                              </t>
+                              <t t-if="not l.date_due">
+                                <t t-set="due" t-value="datetime.datetime.strptime(l.date_invoice, '%Y-%m-%d')"/>
+                              </t>
+                              <t t-set="now" t-value="datetime.datetime.now()"/>
+                              <t t-set="age" t-value="(now-due).days"/>
+                              <td><span t-esc="l.number"/></td>
+                              <td><span t-esc="l.date_invoice"/></td>
+                              <td><span t-esc="l.date_due"/></td>
+                              <td><span t-esc="age"/></td>
+                              <td><span t-esc="l.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: l.currency_id}"/></td>
+                              <td><span t-esc="l.residual" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: l.currency_id}"/></td>
+                          </tr>
+                          <tr t-if="l.type == 'out_refund' and (l.partner_id.id == customer[1] or l.partner_id.id == customer[0][7]) and l.user_id.id == sales[1]" style="background-color:D6F19E;">
+                              <td><span t-esc="l.number"/></td>
+                              <td><span t-esc="l.date_invoice"/></td>
+                              <td><span t-esc="l.date_due"/></td>
+                              <td> </td>
+                              <td><span>-</span><span t-esc="l.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: l.currency_id}"/></td>
+                              <td><span>-</span><span t-esc="l.residual" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: l.currency_id}"/></td>
+                          </tr>
+                        </t>
+                    </tbody>
+                </table>
+              </t>
+            </t>
+          </div>
+        </div>
+      </t>
+    </t>
+  </t>
+</t>
